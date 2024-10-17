@@ -1,0 +1,142 @@
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+class Solicitud {
+public:
+    string nombreAlumno;
+    string carrera;
+    string preparatoria;
+    float promedio;
+
+    Solicitud(string nombreAlumno, string carrera, string preparatoria, float promedio)
+        : nombreAlumno(nombreAlumno), carrera(carrera), preparatoria(preparatoria), promedio(promedio) {}
+
+    bool operator<(const Solicitud& other) const {
+        return promedio < other.promedio;
+    }
+
+    bool operator>(const Solicitud& other) const {
+        return promedio > other.promedio;
+    }
+
+    friend ostream& operator<<(ostream& os, const Solicitud& solicitud) {
+        os << "Alumno: " << solicitud.nombreAlumno
+           << ", Carrera: " << solicitud.carrera
+           << ", Preparatoria: " << solicitud.preparatoria
+           << ", Promedio: " << solicitud.promedio;
+        return os;
+    }
+};
+
+class ListaSolicitudes {
+private:
+    vector<Solicitud> solicitudes;
+
+public:
+    void agregarSolicitud(const Solicitud& nuevaSolicitud) {
+        solicitudes.push_back(nuevaSolicitud);
+        ordenarPorPromedio();
+    }
+
+    void ordenarPorPromedio() {
+        // Implementación del algoritmo de inserción, ordenando de mayor a menor
+        for (int i = 1; i < solicitudes.size(); i++) {
+            Solicitud aux = solicitudes[i];
+            int j = i;
+            while (j > 0 && aux > solicitudes[j - 1]) {
+                solicitudes[j] = solicitudes[j - 1];
+                j--;
+            }
+            solicitudes[j] = aux;
+        }
+    }
+
+    void mostrarSolicitudes() const {
+        if (solicitudes.empty()) {
+            cout << "No hay solicitudes registradas." << endl;
+            return;
+        }
+        for (int i = 0; i < solicitudes.size(); i++) {
+            cout << (i + 1) << ". " << solicitudes[i] << endl;
+        }
+    }
+
+    int buscarSolicitudPorNombre(const string& nombre) {
+        int izquierda = 0;
+        int derecha = solicitudes.size() - 1;
+
+        while (izquierda <= derecha) {
+            int medio = (izquierda + derecha) / 2;
+
+            if (solicitudes[medio].nombreAlumno == nombre) {
+                return medio + 1; // Retornamos la posición basada en 1, no en 0
+            }
+            if (solicitudes[medio].nombreAlumno < nombre) {
+                derecha = medio - 1;
+            } else {
+                izquierda = medio + 1;
+            }
+        }
+
+        return -1; // No encontrado
+    }
+
+    int contarSolicitudesAntes(int posicion) const {
+        return posicion - 1; // Posiciones anteriores, con 1-indexing
+    }
+};
+
+int main() {
+    ListaSolicitudes lista;
+    int opcion;
+    string nombre, carrera, preparatoria;
+    float promedio;
+
+    do {
+        cout << "\nMenu:\n";
+        cout << "1. Agregar Solicitud\n";
+        cout << "2. Buscar Solicitud\n";
+        cout << "3. Mostrar Solicitudes\n";
+        cout << "4. Salir\n";
+        cout << "Ingrese una opcion: ";
+        cin >> opcion;
+
+        switch (opcion) {
+            case 1:
+                cout << "Ingrese nombre del alumno: ";
+                cin >> nombre;
+                cout << "Ingrese carrera: ";
+                cin >> carrera;
+                cout << "Ingrese nombre de la preparatoria: ";
+                cin >> preparatoria;
+                cout << "Ingrese promedio: ";
+                cin >> promedio;
+                lista.agregarSolicitud(Solicitud(nombre, carrera, preparatoria, promedio));
+                break;
+            case 2: {
+                cout << "Ingrese nombre del alumno a buscar: ";
+                cin >> nombre;
+                int posicion = lista.buscarSolicitudPorNombre(nombre);
+                if (posicion != -1) {
+                    cout << "Solicitud encontrada en la posición: " << posicion << endl;
+                    cout << "Solicitudes antes de esta: " << lista.contarSolicitudesAntes(posicion) << endl;
+                } else {
+                    cout << "Solicitud no encontrada. Debe dar de alta una solicitud." << endl;
+                }
+                break;
+            }
+            case 3:
+                lista.mostrarSolicitudes();
+                break;
+            case 4:
+                cout << "Saliendo del programa..." << endl;
+                break;
+            default:
+                cout << "Opcion no valida." << endl;
+        }
+    } while (opcion != 4);
+
+    return 0;
+}
